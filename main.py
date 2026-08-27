@@ -133,6 +133,7 @@ from tafsir import (
     tafsir_system_context,
 )
 from vocabulary import router as vocabulary_router
+from video_analysis import router as video_analysis_router
 
 logger = logging.getLogger(__name__)
 
@@ -289,6 +290,7 @@ app.include_router(arabic_ocr_router)
 app.include_router(vocabulary_router)
 # Swahili language processing: Islamic terminology, loanword morphology, and East African context
 app.include_router(swahili_router)
+app.include_router(video_analysis_router)
 # Religious misinformation flagging: detection, correction, and blocking of misinformation
 app.include_router(misinformation_router)
 
