@@ -19,24 +19,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import google.generativeai as genai
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, Security
-from fastapi.concurrency import run_in_threadpool
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi.security import APIKeyHeader
-from google.api_core.exceptions import (
-    DeadlineExceeded,
-    InvalidArgument,
-    ResourceExhausted,
-    ServiceUnavailable,
-)
-from pydantic import BaseModel, Field, field_validator
-from slowapi import Limiter
-from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
-
 import telemetry
 from arabic_ocr import router as arabic_ocr_router
 from audio_hadith import router as audio_hadith_router
@@ -58,6 +40,13 @@ from confidence import (
 )
 from config import get_settings
 from errors import APIException
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, Security
+from fastapi.concurrency import run_in_threadpool
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.security import APIKeyHeader
 from feedback import (
     COMMENT_MAX_CHARS,
     FEEDBACK_TAXONOMY,
@@ -73,6 +62,12 @@ from fiqh import (
     classify_fiqh,
     normalize_madhhab,
 )
+from google.api_core.exceptions import (
+    DeadlineExceeded,
+    InvalidArgument,
+    ResourceExhausted,
+    ServiceUnavailable,
+)
 from hadith import HADITH_ADAB_CONTEXT, HadithReference, annotate as annotate_hadith, build_caution_note
 from hadith_context import router as hadith_context_router
 from history import router as history_router
@@ -84,8 +79,10 @@ from memory.extraction import (
     merge_summaries,
     summarize_conversation_turns,
 )
+from misinformation_api import router as misinformation_router
 from model_router import router as model_routing_router
 from page_analysis import router as page_analysis_router
+from pydantic import BaseModel, Field, field_validator
 from query_optimizer import router as query_optimizer_router
 from reasoning_chains import router as reasoning_router
 from reformulation import router as reformulation_router
@@ -105,6 +102,9 @@ from semantic_cache import (
     normalize_text,
 )
 from sentiment import router as sentiment_router
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from stellar import (
     PurchaseContext,
     PurchaseInfo,
@@ -118,7 +118,6 @@ from stellar import (
 )
 from store import create_session_store, dicts_to_contents, history_to_dicts
 from study import router as study_router
-from misinformation_api import router as misinformation_router
 from swahili import (
     analyze_swahili,
     router as swahili_router,
@@ -133,6 +132,7 @@ from tafsir import (
     tafsir_system_context,
 )
 from vocabulary import router as vocabulary_router
+
 from video_analysis import router as video_analysis_router
 
 logger = logging.getLogger(__name__)
@@ -314,6 +314,7 @@ async def recommend_adhkar(body: AdhkarRecommendRequest) -> dict[str, Any]:
         "matches": matches,
         "message": message,
     }
+
 
 # Configure CORS
 app.add_middleware(
