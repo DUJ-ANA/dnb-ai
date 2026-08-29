@@ -15,7 +15,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -63,7 +63,7 @@ def extract_media(video_path: Path, workdir: Path) -> tuple[Path | None, list[di
     """Extract mono audio and one frame every 30 seconds when ffmpeg exists."""
     if not shutil.which("ffmpeg"):
         return None, []
-    audio = workdir / "audio.wav"
+    audio: Path | None = workdir / "audio.wav"
     audio_result = _run(["ffmpeg", "-y", "-i", str(video_path), "-vn", "-ac", "1", "-ar", "16000", str(audio)])
     if audio_result.returncode != 0:
         audio = None
@@ -115,7 +115,11 @@ def analyze_video(video_path: Path, transcript: str = "") -> dict[str, Any]:
             "quran_references": extract_quran_references(combined),
             "frames": [{k: v for k, v in frame.items() if k != "path"} for frame in frames],
             "search_index": build_search_index(combined, frames),
-            "capabilities": {"ffmpeg": audio is not None or bool(frames), "asr": bool(transcript), "ocr": bool(visual_text)},
+            "capabilities": {
+                "ffmpeg": audio is not None or bool(frames),
+                "asr": bool(transcript),
+                "ocr": bool(visual_text),
+            },
         }
 
 
@@ -126,7 +130,7 @@ async def _process(job_id: str, payload: bytes, suffix: str, transcript: str) ->
             handle.write(payload)
             handle.flush()
             result = await asyncio.to_thread(analyze_video, Path(handle.name), transcript)
-        _jobs[job_id].update(status="completed", result=result, completed_at=datetime.now(timezone.utc).isoformat())
+        _jobs[job_id].update(status="completed", result=result, completed_at=datetime.now(UTC).isoformat())
     except Exception as error:  # keep job failures observable to clients
         _jobs[job_id].update(status="failed", error=str(error))
 
@@ -144,7 +148,12 @@ async def submit_video_analysis(
     if len(payload) > MAX_VIDEO_BYTES:
         raise HTTPException(status_code=413, detail="Video must be 100MB or smaller.")
     job_id = str(uuid.uuid4())
-    _jobs[job_id] = {"id": job_id, "status": "queued", "filename": file.filename, "created_at": datetime.now(timezone.utc).isoformat()}
+    _jobs[job_id] = {
+        "id": job_id,
+        "status": "queued",
+        "filename": file.filename,
+        "created_at": datetime.now(UTC).isoformat(),
+    }
     background_tasks.add_task(_process, job_id, payload, suffix, transcript)
     return {"job_id": job_id, "status": "queued", "poll_url": f"/video-analysis/jobs/{job_id}"}
 
