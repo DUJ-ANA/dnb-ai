@@ -84,6 +84,9 @@ jobs:
       - name: Run zakat and nisab tests
         run: pytest -q tests/test_zakat.py
 
+      - name: Run asbab al-nuzul tests
+        run: pytest -q tests/test_asbab.py
+
       - name: Run purchase history chat tests
         run: pytest -q tests/test_purchases.py
 
@@ -95,6 +98,9 @@ jobs:
 
       - name: Run religious sentiment tests
         run: pytest -q tests/test_sentiment.py
+
+      - name: Run Quran accuracy benchmark tests
+        run: pytest -q tests/test_quran_benchmark.py
 
       - name: Run LLM telemetry tests
         run: pytest -q tests/test_telemetry.py
@@ -113,6 +119,9 @@ jobs:
 
       - name: Run Islamic QA Benchmark dataset tests
         run: pytest -q tests/test_islamic_qa_benchmark.py
+
+      - name: Run intent classification tests
+        run: pytest -q tests/test_intent.py
 
       - name: Validate Islamic QA Benchmark dataset integrity
         run: python scripts/eval_islamic_qa.py --validate-only
